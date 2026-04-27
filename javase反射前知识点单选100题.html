@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaSE 反射前知识点与反射 单选200题</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d9e1ec;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --brand: #2563eb;
+      --brand-soft: #dbeafe;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+      --bad: #b91c1c;
+      --bad-soft: #fee2e2;
+      --warn: #92400e;
+      --warn-soft: #fef3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(circle at top right, #dbeafe 0, transparent 24%),
+        radial-gradient(circle at top left, #fde68a 0, transparent 20%),
+        linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+
+    .hero,
+    .toolbar,
+    .section-card,
+    .question-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(217, 225, 236, 0.9);
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+      backdrop-filter: blur(4px);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 8px 0;
+      color: var(--muted);
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--warn-soft);
+      color: var(--warn);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .ghost {
+      background: #eff6ff;
+      color: var(--brand);
+    }
+
+    .section-card {
+      padding: 18px 20px;
+      margin: 22px 0 16px;
+    }
+
+    .section-card h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .section-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .question-card {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .question-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .q-no {
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .q-section {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .question-title {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #fff;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .option:hover {
+      border-color: #93c5fd;
+      background: #f8fbff;
+    }
+
+    .option input {
+      margin-top: 4px;
+      accent-color: var(--brand);
+      transform: scale(1.1);
+    }
+
+    .option-letter {
+      font-weight: 800;
+      color: var(--brand);
+      min-width: 22px;
+    }
+
+    .question-actions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .result {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+      border: 1px solid #86efac;
+    }
+
+    .result.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+      border: 1px solid #fca5a5;
+    }
+
+    .result.warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+      border: 1px solid #fcd34d;
+    }
+
+    .result-line {
+      margin: 4px 0;
+    }
+
+    .answer-panel {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+      color: #334155;
+      font-size: 14px;
+    }
+
+    .answer-panel.show {
+      display: block;
+    }
+
+    .answer-panel strong {
+      color: #0f172a;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding: 18px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: min(100% - 20px, 1120px);
+        margin: 18px auto 40px;
+      }
+
+      .hero,
+      .toolbar,
+      .section-card,
+      .question-card {
+        border-radius: 16px;
+      }
+
+      .hero,
+      .toolbar,
+      .question-card {
+        padding: 16px;
+      }
+
+      .question-title {
+        font-size: 17px;
+      }
+
+      .toolbar {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>JavaSE 反射前知识点与反射 单选200题</h1>
+      <p>范围：03-05 到 04-01 的反射部分，包含基础语法、流程控制、数组、方法、面向对象、异常、常用类、集合、IO、内部类、Lambda、工厂、枚举、断言、反射。</p>
+      <p>形式：全单选，每题 4 个选项。可以逐题提交，也可以一次性提交全部。</p>
+      <div class="note">如果要放到 GitHub 上直接点着做，建议开 GitHub Pages 来访问这个 HTML 页面。GitHub Pages 支持直接发布 HTML、CSS、JavaScript 文件。</div>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-row">
+        <div class="stats">
+          <span class="pill" id="totalCount">总题数：200</span>
+          <span class="pill" id="answeredCount">已作答：0</span>
+          <span class="pill" id="correctCount">答对：0</span>
+        </div>
+        <div class="actions">
+          <button class="primary" id="submitAllBtn" type="button">提交全部</button>
+          <button class="ghost" id="toggleAnswerBtn" type="button">展开全部解析</button>
+          <button class="secondary" id="resetBtn" type="button">清空重做</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="quiz"></div>
+
+    <div class="footer">
+      文件名：javase反射前知识点单选100题.html
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { section: 'Java基础', q: 'JDK 和 JRE 的关系，哪一项是对的？', options: ['JDK 包含 JRE', 'JRE 包含 JDK', '两者完全一样', 'JDK 只能运行不能开发'], answer: 0, explain: 'JDK 是开发工具包，里面包含 JRE；JRE 是运行环境。' },
+      { section: 'Java基础', q: 'Java 程序的正确入口方法是？', options: ['public static int main(String[] args)', 'public void main(String[] args)', 'public static void main(String[] args)', 'static void Main(String[] args)'], answer: 2, explain: 'Java 程序入口必须是 public static void main(String[] args)。' },
+      { section: 'Java基础', q: '用于生成 API 文档的注释是？', options: ['// 注释', '/* 注释 */', '/** 注释 */', '<!-- 注释 -->'], answer: 2, explain: '/** */ 是文档注释，可以被 javadoc 工具识别。' },
+      { section: 'Java基础', q: '下面哪个不能作为 Java 标识符开头？', options: ['字母', '_', '$', '数字'], answer: 3, explain: 'Java 标识符不能用数字开头。' },
+      { section: 'Java基础', q: '在方法里定义 int num; 后直接使用，会发生什么？', options: ['编译报错', '运行时报错', '默认值是 0', '默认值是 null'], answer: 0, explain: '局部变量必须先初始化后使用，不会自动给默认值。' },
+      { section: 'Java基础', q: '下面哪个是合法的 char 字面量？', options: ['"A"', '\'A\'', '"中"', '\'AB\''], answer: 1, explain: 'char 表示单个字符，要用单引号，并且只能放一个字符。' },
+      { section: 'Java基础', q: '十六进制字面量 0x10 的十进制值是？', options: ['8', '10', '16', '18'], answer: 2, explain: '0x10 表示十六进制的 16。' },
+      { section: 'Java基础', q: '下面哪个属于引用数据类型？', options: ['int', 'double', 'char', 'String'], answer: 3, explain: 'String 是类，属于引用数据类型。' },
+      { section: 'Java基础', q: 'byte 类型的取值范围是？', options: ['0 到 255', '-128 到 127', '-32768 到 32767', '0 到 127'], answer: 1, explain: 'byte 占 1 个字节，范围是 -128 到 127。' },
+      { section: 'Java基础', q: 'Java 中浮点数字面量 3.14 默认是什么类型？', options: ['float', 'double', 'int', 'long'], answer: 1, explain: '带小数点的字面量默认是 double。' },
+
+      { section: '流程控制', q: '关于 && 和 &，哪一项是对的？', options: ['&& 不支持逻辑运算', '&& 支持短路，& 不支持', '& 只能做位运算', '两者完全一样'], answer: 1, explain: '&& 是短路与，前面已经能确定结果时，后面不再执行。' },
+      { section: '流程控制', q: '传统 switch 语句中，下面哪个类型不能直接作为判断表达式？', options: ['byte', 'char', 'int', 'long'], answer: 3, explain: '传统 switch 支持 byte、short、char、int、枚举、String，不支持 long。' },
+      { section: '流程控制', q: 'break 在循环中的作用是？', options: ['跳过本次循环剩余代码', '结束当前所在循环', '结束整个程序', '重新开始循环'], answer: 1, explain: 'break 会直接跳出当前这一层循环。' },
+      { section: '流程控制', q: 'continue 在循环中的作用是？', options: ['结束循环', '结束方法', '跳过本次剩余语句，进入下一次循环', '退出程序'], answer: 2, explain: 'continue 只是跳过当前这一次，不会结束整个循环。' },
+      { section: '流程控制', q: '已知 int i = 3; 执行 int a = i++; 后，a 和 i 分别是？', options: ['a=3，i=4', 'a=4，i=4', 'a=3，i=3', 'a=4，i=3'], answer: 0, explain: 'i++ 先用后加，所以 a 先拿到 3，然后 i 变成 4。' },
+      { section: '流程控制', q: '表达式 5 / 2 的结果是？', options: ['2', '2.5', '3', '2.0'], answer: 0, explain: '两个 int 相除，结果还是 int，小数部分直接丢掉。' },
+      { section: '流程控制', q: '表达式 5 % 2 的结果是？', options: ['1', '2', '2.5', '0'], answer: 0, explain: '% 是取余，5 除以 2 余 1。' },
+      { section: '流程控制', q: 'if ... else if ... else 结构中，条件命中后会怎样？', options: ['后面的分支也继续执行', '只执行第一个满足条件的分支', '所有 true 的分支都会执行', '一定执行 else'], answer: 1, explain: '这个结构从上往下判断，命中一个后就不会再进后面的分支。' },
+      { section: '流程控制', q: 'Random rand = new Random(); rand.nextInt(10) 的结果范围是？', options: ['1 到 10', '0 到 10', '0 到 9', '1 到 9'], answer: 2, explain: 'nextInt(10) 生成 [0,10) 范围内的整数。' },
+      { section: '流程控制', q: '使用 Scanner 从控制台读取一个整数，常用的方法是？', options: ['nextLine()', 'nextInt()', 'readInt()', 'getInt()'], answer: 1, explain: 'Scanner 读取 int 常用 nextInt()。' },
+
+      { section: '数组与方法', q: 'int[] arr = new int[3]; 这行代码创建的数组长度是？', options: ['2', '3', '4', '不确定'], answer: 1, explain: 'new int[3] 就是长度为 3 的 int 数组。' },
+      { section: '数组与方法', q: 'Java 数组的下标从几开始？', options: ['-1', '0', '1', '由程序员决定'], answer: 1, explain: 'Java 数组下标从 0 开始。' },
+      { section: '数组与方法', q: 'new int[4] 创建出来后，每个元素的默认值是？', options: ['null', '0', '1', '随机值'], answer: 1, explain: 'int 数组元素默认值是 0。' },
+      { section: '数组与方法', q: '冒泡排序的核心思想是？', options: ['每次找到最小值直接放首位', '相邻元素比较并交换', '把数组拆成两半再合并', '随机交换直到有序'], answer: 1, explain: '冒泡排序是通过相邻元素比较，把较大或较小的元素逐步“冒”到目标位置。' },
+      { section: '数组与方法', q: '遍历数组时，常见的正确循环条件是？', options: ['i <= arr.length', 'i < arr.length', 'i == arr.length', 'i > arr.length'], answer: 1, explain: '数组最后一个下标是 length - 1，所以条件一般写 i < arr.length。' },
+      { section: '数组与方法', q: '一个返回类型为 int 的方法，正常返回数据时应该使用？', options: ['return;', 'return null;', 'return 一个 int 值;', '直接结束不用写 return'], answer: 2, explain: '返回类型是 int，就要返回一个 int 结果。' },
+      { section: '数组与方法', q: '关于 void 方法，哪一项是对的？', options: ['不能写 return', '必须 return 一个值', '可以写 return; 直接结束方法', '必须返回 null'], answer: 2, explain: 'void 方法不返回值，但可以用 return; 提前结束。' },
+      { section: '数组与方法', q: '方法重载成立的条件是？', options: ['方法名相同，参数列表不同', '方法名不同，返回值相同', '方法名相同，参数列表相同', '方法名相同，只有返回值不同'], answer: 0, explain: '重载看的是方法名相同、参数列表不同，和返回值没直接关系。' },
+      { section: '数组与方法', q: '递归方法必须具备的关键条件是？', options: ['必须是 public', '必须有出口条件', '必须有参数', '必须返回 int'], answer: 1, explain: '递归如果没有出口，就可能一直调用下去，最后栈溢出。' },
+      { section: '数组与方法', q: '基本类型作为方法参数传递时，方法内修改参数值会怎样？', options: ['一定改掉原变量', '只会改方法内的副本', '编译报错', '结果不确定'], answer: 1, explain: 'Java 是值传递，基本类型传进去的是副本。' },
+
+      { section: '面向对象基础', q: '关于类和对象，哪一项是对的？', options: ['对象是模板，类是实例', '类是模板，对象是实例', '类和对象没有区别', '类只能有一个对象'], answer: 1, explain: '类描述一类事物，对象是根据类创建出来的具体实例。' },
+      { section: '面向对象基础', q: '使用 new 创建对象时，下面哪项会发生？', options: ['只开辟变量名，不分配内存', '会分配对象内存并调用构造方法', '只调用普通方法', '一定不会执行构造方法'], answer: 1, explain: 'new 会创建对象，并执行匹配的构造方法。' },
+      { section: '面向对象基础', q: 'this 关键字在普通成员方法里通常表示？', options: ['当前类', '当前对象', '父类对象', '任意对象'], answer: 1, explain: 'this 指向当前正在调用这个方法的对象。' },
+      { section: '面向对象基础', q: '匿名对象一般适合哪种场景？', options: ['需要重复使用很多次', '只临时使用一次', '必须保存到集合里', '只能调用静态方法'], answer: 1, explain: '匿名对象没有名字，通常只适合一次性调用。' },
+      { section: '面向对象基础', q: '成员变量和局部变量的区别中，哪项是对的？', options: ['两者都没有默认值', '局部变量有默认值，成员变量没有', '成员变量有默认值，局部变量没有', '两者都必须手动赋值'], answer: 2, explain: '成员变量在对象创建后会有默认值，局部变量不会自动初始化。' },
+      { section: '面向对象基础', q: '关于构造方法，哪一项是对的？', options: ['方法名可以和类名不同', '必须写返回值类型', '方法名必须和类名相同', '只能有一个构造方法'], answer: 2, explain: '构造方法的方法名必须和类名一致，而且没有返回值类型。' },
+      { section: '面向对象基础', q: '如果一个类没有手写任何构造方法，编译器通常会？', options: ['什么也不做', '自动补一个无参构造', '自动补一个有参构造', '让程序无法编译'], answer: 1, explain: '如果完全没写构造方法，编译器会给一个默认无参构造。' },
+      { section: '面向对象基础', q: '在构造方法中，this(...) 的作用是？', options: ['调用父类构造方法', '调用当前类其他构造方法', '创建新对象', '返回当前对象'], answer: 1, explain: 'this(...) 用于当前类构造方法之间的调用。' },
+      { section: '面向对象基础', q: '在子类构造方法中，super(...) 的作用是？', options: ['调用本类普通方法', '调用父类构造方法', '调用本类构造方法', '创建父类对象数组'], answer: 1, explain: 'super(...) 用来调用父类构造方法。' },
+      { section: '面向对象基础', q: '创建子类对象时，构造方法执行顺序通常是？', options: ['先子类后父类', '先父类后子类', '只执行子类', '只执行父类'], answer: 1, explain: '创建子类对象时，会先初始化父类部分，再执行子类构造。' },
+
+      { section: '面向对象进阶', q: '封装常见的做法是？', options: ['成员变量全部 public', '成员变量 private，提供公共方法访问', '所有方法都 private', '类里不能有成员变量'], answer: 1, explain: '封装通常是把成员变量藏起来，通过 get/set 等方法控制访问。' },
+      { section: '面向对象进阶', q: 'private 修饰的成员可以在哪访问？', options: ['任意类', '同包类', '当前类内部', '子类内部'], answer: 2, explain: 'private 的可见范围最小，只能在当前类里访问。' },
+      { section: '面向对象进阶', q: '默认访问权限（无修饰符）的成员可以被谁访问？', options: ['同包类', '所有子类', '任意包任意类', '只有当前类'], answer: 0, explain: '默认权限也叫包权限，只能在同一个包里访问。' },
+      { section: '面向对象进阶', q: 'protected 的访问特点是？', options: ['只能当前类', '同包可见，也可被不同包子类访问', '任何地方都能访问', '只能不同包子类访问'], answer: 1, explain: 'protected 比默认权限多了一层：不同包的子类也能访问。' },
+      { section: '面向对象进阶', q: 'public 修饰的成员特点是？', options: ['只能同包访问', '只能本类访问', '任意位置都可访问', '只能子类访问'], answer: 2, explain: 'public 的访问范围最大，任何能看到这个类的地方都能访问。' },
+      { section: '面向对象进阶', q: 'static 成员属于谁？', options: ['某个具体对象', '当前方法', '类本身', '构造方法'], answer: 2, explain: 'static 成员是类级别的，不属于某一个对象。' },
+      { section: '面向对象进阶', q: 'static 方法里不能直接访问什么？', options: ['static 变量', 'static 方法', '实例成员变量', '类名'], answer: 2, explain: 'static 方法没有 this，不能直接访问对象级别的实例成员。' },
+      { section: '面向对象进阶', q: '实现单例模式时，private 构造方法的主要作用是？', options: ['让对象更大', '防止外部随意 new 对象', '让子类必须重写', '让类自动抽象化'], answer: 1, explain: '构造方法私有化后，外部就不能直接 new 这个类。' },
+      { section: '面向对象进阶', q: '关于方法重写，哪一项是对的？', options: ['只要方法名一样就算重写', '参数列表必须和父类一致', '返回值必须完全一样，不能协变', 'private 方法一定能被重写'], answer: 1, explain: '重写要求方法名、参数列表一致，返回类型可相同或协变。' },
+      { section: '面向对象进阶', q: '关于 final 方法，哪一项是对的？', options: ['不能被继承', '不能被调用', '不能被重写，但可以被重载', '必须写在 final 类中'], answer: 2, explain: 'final 方法不能被子类重写，但仍然可以被继承和调用。' },
+
+      { section: '抽象类接口多态异常', q: 'abstract 类的特点是？', options: ['必须有对象', '不能创建对象', '不能有普通方法', '不能有成员变量'], answer: 1, explain: '抽象类主要用于做父类模板，不能直接实例化。' },
+      { section: '抽象类接口多态异常', q: '抽象方法的特点是？', options: ['必须有方法体', '没有方法体', '只能写在接口里', '必须是 static'], answer: 1, explain: '抽象方法只有声明，没有具体实现。' },
+      { section: '抽象类接口多态异常', q: '传统写法中，接口里的抽象方法默认修饰符是？', options: ['private abstract', 'protected abstract', 'public abstract', 'static abstract'], answer: 2, explain: '接口中的抽象方法默认就是 public abstract。' },
+      { section: '抽象类接口多态异常', q: '一个普通类实现接口后，通常应该？', options: ['实现接口中的抽象方法', '删掉接口', '一定再继承 Object', '把接口改成抽象类'], answer: 0, explain: '普通类如果实现了接口，就要把接口要求的方法实现出来。' },
+      { section: '抽象类接口多态异常', q: '多态常见的写法是？', options: ['子类引用指向父类对象', '父类引用指向子类对象', '接口引用只能指向接口对象', '父类和子类不能互相赋值'], answer: 1, explain: '多态最常见的形式就是父类引用指向子类对象。' },
+      { section: '抽象类接口多态异常', q: '在多态下调用被重写的方法时，实际执行哪个版本？', options: ['父类版本', '子类版本', '随机一个', '编译器决定后固定不能变'], answer: 1, explain: '成员方法调用看运行时对象，所以会执行子类重写后的版本。' },
+      { section: '抽象类接口多态异常', q: '把父类引用强转成错误的子类类型，可能出现什么异常？', options: ['NullPointerException', 'ArrayIndexOutOfBoundsException', 'ClassCastException', 'ArithmeticException'], answer: 2, explain: '类型不匹配的强制类型转换会抛出 ClassCastException。' },
+      { section: '抽象类接口多态异常', q: 'instanceof 运算符通常用来做什么？', options: ['比较内容是否相等', '判断对象是否属于某种类型', '比较哈希值', '判断字符串长度'], answer: 1, explain: 'instanceof 主要用于判断对象是不是某个类或接口的实例。' },
+      { section: '抽象类接口多态异常', q: 'throw 关键字的作用是？', options: ['声明方法可能抛异常', '手动抛出一个异常对象', '捕获异常', '关闭异常机制'], answer: 1, explain: 'throw 是在代码里主动抛出异常。' },
+      { section: '抽象类接口多态异常', q: 'finally 代码块通常有什么特点？', options: ['只在不出异常时执行', '只在 catch 后执行', '通常都会执行', '只能写在 main 方法里'], answer: 2, explain: 'finally 一般都会执行，常用来做资源释放。' },
+
+      { section: 'Object 包装类 String', q: '所有类默认都直接或间接继承哪个类？', options: ['String', 'Object', 'Class', 'System'], answer: 1, explain: 'Java 中所有类最终都继承自 Object。' },
+      { section: 'Object 包装类 String', q: '== 用在两个引用变量上时，比较的是？', options: ['对象内容', '对象地址是否相同', '字符串长度', '哈希值'], answer: 1, explain: '引用类型用 == 比较的是是不是指向同一个对象。' },
+      { section: 'Object 包装类 String', q: 'Object 类默认的 equals 比较的本质是？', options: ['内容相等', '地址相等', '长度相等', '哈希相等'], answer: 1, explain: 'Object 没重写 equals 时，本质上和 == 类似，也是比地址。' },
+      { section: 'Object 包装类 String', q: '重写 toString() 的主要目的通常是？', options: ['让对象可以被删除', '让对象自动序列化', '得到更清晰的字符串表示', '改变对象地址'], answer: 2, explain: 'toString() 常用于打印对象信息、日志和调试。' },
+      { section: 'Object 包装类 String', q: 'Integer.valueOf("123") 的结果是？', options: ['字符串 "123"', 'int 123', 'Integer 对象 123', '编译报错'], answer: 2, explain: 'valueOf 返回的是包装类对象 Integer。' },
+      { section: 'Object 包装类 String', q: '自动装箱指的是？', options: ['Integer 自动变 int', 'int 自动变 Integer', 'String 自动变 char[]', 'double 自动变 String'], answer: 1, explain: '自动装箱就是基本类型自动转成对应包装类。' },
+      { section: 'Object 包装类 String', q: '把字符串 "456" 转成基本类型 int，常用哪个方法？', options: ['Integer.parseInt("456")', 'Integer.getInt("456")', 'String.valueOf("456")', 'parse("456")'], answer: 0, explain: 'parseInt 返回的是基本类型 int。' },
+      { section: 'Object 包装类 String', q: 'String 的一个重要特点是？', options: ['可变', '不可变', '只能存数字', '不能比较内容'], answer: 1, explain: 'String 创建后内容不能改，拼接通常会产生新对象。' },
+      { section: 'Object 包装类 String', q: '频繁拼接字符串时，更适合用哪个类？', options: ['StringBuilder', 'Integer', 'Math', 'File'], answer: 0, explain: 'StringBuilder 更适合频繁修改和拼接字符串。' },
+      { section: 'Object 包装类 String', q: 'Calendar 中月份的取值特点是？', options: ['1 月对应 1', '1 月对应 0', '月份不能获取', '月份固定从 2 开始'], answer: 1, explain: 'Calendar 的月份从 0 开始，1 月是 0，12 月是 11。' },
+
+      { section: '集合与常用类', q: 'Collection 接口主要表示什么结构？', options: ['键值对集合', '单列集合', '数据库连接', '线程集合'], answer: 1, explain: 'Collection 体系主要表示单列集合。' },
+      { section: '集合与常用类', q: 'List 集合的特点是？', options: ['无序且不可重复', '有序且元素可重复', '只能存整数', '必须线程安全'], answer: 1, explain: 'List 保存元素有顺序，而且允许重复。' },
+      { section: '集合与常用类', q: 'Set 集合最典型的特点是？', options: ['元素可重复', '下标访问快', '元素不允许重复', '必须按插入顺序保存'], answer: 2, explain: 'Set 主要用于去重。' },
+      { section: '集合与常用类', q: 'HashMap 存储的数据形式是？', options: ['单个值', '键值对', '只有键没有值', '只有值没有键'], answer: 1, explain: 'HashMap 里存的是 key-value 结构。' },
+      { section: '集合与常用类', q: '泛型的主要作用是？', options: ['提高类型安全', '让代码变慢', '取代继承', '让类变成接口'], answer: 0, explain: '泛型可以在编译阶段约束类型，减少强转和类型错误。' },
+      { section: '集合与常用类', q: 'Arrays.sort(arr) 默认对数字数组做什么？', options: ['降序排序', '升序排序', '随机排序', '去重排序'], answer: 1, explain: 'Arrays.sort 对基本类型数组默认按升序排列。' },
+      { section: '集合与常用类', q: 'File.exists() 的作用是？', options: ['删除文件', '判断文件或目录是否存在', '创建目录', '获取文件大小'], answer: 1, explain: 'exists() 返回路径对应的文件或目录是否存在。' },
+      { section: '集合与常用类', q: 'File.isDirectory() 的作用是？', options: ['判断是不是隐藏文件', '判断是不是目录', '判断是不是可执行文件', '判断是不是空文件'], answer: 1, explain: 'isDirectory() 用来判断当前路径是不是目录。' },
+      { section: '集合与常用类', q: '字节流更适合处理哪类数据？', options: ['只能文本', '所有类型文件', '只能图片', '只能视频'], answer: 1, explain: '字节流能处理任意类型的数据，包括文本、图片、音频等。' },
+      { section: '集合与常用类', q: '字符流更适合处理哪类数据？', options: ['二进制压缩包', '纯文本数据', '只有图片', '只有音频'], answer: 1, explain: '字符流基于字符，主要适合处理文本文件。' },
+
+      { section: 'IO 内部类 Lambda', q: '缓冲流的主要作用是？', options: ['把文件变小', '提高读写效率', '把字节变字符', '只能写不能读'], answer: 1, explain: '缓冲流内部带缓冲区，减少和底层设备的直接交互次数。' },
+      { section: 'IO 内部类 Lambda', q: '调用流对象的 close() 后，通常会发生什么？', options: ['只关闭不刷新', '刷新并释放资源', '自动删除文件', '自动压缩文件'], answer: 1, explain: 'close() 一般会先做必要的刷新，再释放资源。' },
+      { section: 'IO 内部类 Lambda', q: '一个类如果想被序列化，通常要实现哪个接口？', options: ['Cloneable', 'Runnable', 'Serializable', 'Comparable'], answer: 2, explain: 'Java 序列化常见要求是实现 Serializable 接口。' },
+      { section: 'IO 内部类 Lambda', q: '成员内部类最大的特点之一是？', options: ['只能有静态成员', '不能访问外部类成员', '可以直接访问外部类成员', '必须单独写在另一个文件'], answer: 2, explain: '成员内部类持有外部类对象信息，所以能访问外部类成员。' },
+      { section: 'IO 内部类 Lambda', q: '静态内部类可以直接访问外部类的什么成员？', options: ['只能实例成员', '只能静态成员', '所有私有实例成员', '什么都不能访问'], answer: 1, explain: '静态内部类没有外部类实例引用，直接访问的一般是外部类静态成员。' },
+      { section: 'IO 内部类 Lambda', q: '匿名内部类通常适合哪种场景？', options: ['需要反复复用很多次的完整类', '一次性使用的简短实现', '必须定义构造参数很多的类', '必须单独打包的组件'], answer: 1, explain: '匿名内部类适合临时、一次性的实现。' },
+      { section: 'IO 内部类 Lambda', q: 'Lambda 表达式主要是为了简化哪类代码？', options: ['普通类继承', '函数式接口实现', '数组定义', '包导入'], answer: 1, explain: 'Lambda 用来简化只有一个抽象方法的接口实现。' },
+      { section: 'IO 内部类 Lambda', q: '简单工厂模式的一个直接好处是？', options: ['完全消灭对象创建', '集中管理对象创建逻辑', '不再需要类', '所有类自动单例'], answer: 1, explain: '简单工厂把对象创建统一收口，调用方不用到处 new。' },
+      { section: 'IO 内部类 Lambda', q: 'Java 枚举中，枚举常量通常写在什么位置？', options: ['类体最后', '最前面', '必须写在方法里', '必须写在构造方法后'], answer: 1, explain: '枚举常量一般写在枚举类体最前面。' },
+      { section: 'IO 内部类 Lambda', q: 'assert 语句默认是什么状态？', options: ['默认开启', '默认关闭', '只能在服务器开启', '只能在 IDE 里开启'], answer: 1, explain: 'assert 默认关闭，需要运行参数开启。' },
+
+      { section: '反射', q: 'Java 反射的核心入口通常是什么对象？', options: ['Object 对象', 'Class 对象', 'String 对象', 'Method 对象'], answer: 1, explain: '反射一般都是先拿到 Class 对象，再去操作构造器、字段、方法。' },
+      { section: '反射', q: '下面哪个是获取 Class 对象的方式？', options: ['对象.getClass()', '对象.getName()', '类名.newClass()', 'new Class()'], answer: 0, explain: '获取 Class 对象的常见方式之一就是 对象.getClass()。' },
+      { section: '反射', q: '关于同一个类的 Class 对象，通常哪项是对的？', options: ['每 new 一个对象就有一个新的 Class 对象', '同一个类在 JVM 中通常对应同一个 Class 对象', 'Class 对象只能手动创建', 'Class 对象只在 main 方法里存在'], answer: 1, explain: '同一个类加载后，通常在 JVM 中只对应一个 Class 对象。' },
+      { section: '反射', q: 'Class.forName("全类名") 的作用是？', options: ['创建一个随机对象', '根据全类名获取 Class 对象', '直接调用对象方法', '只能拿到包名'], answer: 1, explain: 'Class.forName 常用于根据字符串形式的全类名拿到字节码对象。' },
+      { section: '反射', q: 'getConstructors() 获取的是？', options: ['所有构造方法，包括 private', '所有 public 构造方法', '所有无参构造方法', '所有本类和父类的普通方法'], answer: 1, explain: 'getConstructors() 只能拿到公共构造方法。' },
+      { section: '反射', q: 'getDeclaredConstructors() 获取的是？', options: ['当前类所有构造方法，包括 private', '只有 public 无参构造', '父类所有构造方法', '当前类所有普通方法'], answer: 0, explain: 'getDeclaredConstructors() 看的是当前类自己声明的全部构造方法。' },
+      { section: '反射', q: '如果想获取指定参数列表的公共构造方法，应该用？', options: ['getConstructor(参数类型...)', 'getDeclaredMethods()', 'getFields()', 'newInstance(参数类型...)'], answer: 0, explain: '获取指定公共构造器，用 getConstructor(参数类型...)。' },
+      { section: '反射', q: '通过反射访问 private 构造方法前，通常要先做什么？', options: ['调用 close()', '调用 setAccessible(true)', '调用 getName()', '调用 hashCode()'], answer: 1, explain: 'private 成员默认不能直接访问，通常要先取消访问检查。' },
+      { section: '反射', q: 'Field 类主要表示什么？', options: ['构造方法', '成员变量', '局部变量', '代码块'], answer: 1, explain: 'Field 表示类中的成员变量。' },
+      { section: '反射', q: 'Method.invoke(obj, args...) 的作用是？', options: ['删除方法', '执行某个方法', '创建字段', '复制类定义'], answer: 1, explain: 'invoke 就是反射调用方法。' },
+
+      { section: 'Java基础', q: 'Java 源文件编译后生成的文件后缀通常是？', options: ['.java', '.class', '.jar', '.txt'], answer: 1, explain: 'Java 源文件经过 javac 编译后，会生成 .class 字节码文件。' },
+      { section: 'Java基础', q: '下面哪个命令通常用于编译 Java 源文件？', options: ['java', 'javac', 'javadoc', 'jar'], answer: 1, explain: 'javac 用来编译 .java 文件，java 用来运行。' },
+      { section: 'Java基础', q: 'boolean 类型通常只有哪两个值？', options: ['0 和 1', 'true 和 false', 'yes 和 no', 'Y 和 N'], answer: 1, explain: 'boolean 只有 true 和 false 两个取值。' },
+      { section: 'Java基础', q: 'long 类型字面量 123 后面常加哪个后缀？', options: ['F', 'D', 'L', 'S'], answer: 2, explain: 'long 类型字面量常写成 123L。' },
+      { section: 'Java基础', q: 'float 类型字面量 3.14 后面常加哪个后缀？', options: ['F', 'L', 'D', 'B'], answer: 0, explain: 'float 字面量一般写成 3.14F，不然默认是 double。' },
+      { section: 'Java基础', q: '下面哪个转义字符表示换行？', options: ['\\t', '\\\\', '\\n', '\\r'], answer: 2, explain: '\\n 表示换行。' },
+      { section: 'Java基础', q: 'short、byte、char 在运算时，通常会先提升成什么类型？', options: ['byte', 'short', 'int', 'long'], answer: 2, explain: '这些较小的整数类型做运算时，通常先提升成 int。' },
+      { section: 'Java基础', q: '下面哪个关键字用于定义类？', options: ['method', 'class', 'new', 'package'], answer: 1, explain: '定义类要用 class 关键字。' },
+      { section: 'Java基础', q: '包声明 package 一般写在 Java 源文件的什么位置？', options: ['最前面', 'main 方法里', '类定义后面', '任意位置都行'], answer: 0, explain: 'package 语句通常写在源文件最前面。' },
+      { section: 'Java基础', q: '一个 .java 文件里如果有 public 类，这个文件名通常应该？', options: ['随便取', '和 public 类类名一致', '必须叫 Main.java', '必须全小写'], answer: 1, explain: 'public 类所在文件名通常要和类名一致。' },
+
+      { section: '流程控制', q: '表达式 ++i 和 i++ 的主要区别是？', options: ['一个加 2，一个加 1', '前者先自增后使用，后者先使用后自增', '前者只能用于 while', '两者返回类型不同'], answer: 1, explain: '++i 先加再用，i++ 先用再加。' },
+      { section: '流程控制', q: '逻辑表达式 false || true 的结果是？', options: ['true', 'false', '编译错误', '运行异常'], answer: 0, explain: '只要有一个操作数为 true，逻辑或结果就是 true。' },
+      { section: '流程控制', q: '逻辑表达式 true && false 的结果是？', options: ['true', 'false', '1', '0'], answer: 1, explain: '逻辑与要求两边都为 true，结果才是 true。' },
+      { section: '流程控制', q: 'do...while 循环和 while 循环相比，一个明显特点是？', options: ['do...while 一次都不会执行', 'do...while 至少执行一次', 'while 一定死循环', '两者语法完全一样'], answer: 1, explain: 'do...while 先执行后判断，所以至少会跑一遍。' },
+      { section: '流程控制', q: 'for (int i = 0; i < 3; i++) 循环体会执行几次？', options: ['2 次', '3 次', '4 次', '无限次'], answer: 1, explain: 'i 取 0、1、2，共执行 3 次。' },
+      { section: '流程控制', q: 'switch 中 case 后如果没有 break，通常会怎样？', options: ['自动结束 switch', '继续向下穿透执行', '立刻报错', '自动跳到 default'], answer: 1, explain: '没有 break 时，switch 可能继续往下穿透。' },
+      { section: '流程控制', q: '三元运算符的基本格式是？', options: ['条件 ? 表达式1 : 表达式2', '条件 : 表达式1 ? 表达式2', '条件 -> 表达式1 : 表达式2', '条件 ? 表达式1 ; 表达式2'], answer: 0, explain: '三元运算符标准格式就是 条件 ? 值1 : 值2。' },
+      { section: '流程控制', q: 'Scanner 读取一整行字符串，常用哪个方法？', options: ['next()', 'nextInt()', 'nextLine()', 'readLine()'], answer: 2, explain: '读取整行通常用 nextLine()。' },
+      { section: '流程控制', q: '标签 break 的作用主要是？', options: ['结束指定外层循环', '结束整个程序', '让变量变成标签类型', '定义一个新方法'], answer: 0, explain: '带标签的 break 常用来直接跳出多层循环中的指定那一层。' },
+      { section: '流程控制', q: '表达式 10 > 3 ? 1 : 2 的结果是？', options: ['10', '3', '1', '2'], answer: 2, explain: '条件 10 > 3 为 true，所以结果取 1。' },
+
+      { section: '数组与方法', q: 'int[] arr = {1, 2, 3}; arr.length 的值是？', options: ['2', '3', '4', '由运行时决定'], answer: 1, explain: '数组里有 3 个元素，所以 length 是 3。' },
+      { section: '数组与方法', q: '访问 arr[arr.length] 会怎样？', options: ['得到最后一个元素', '得到 0', '数组越界异常', '自动扩容'], answer: 2, explain: '最后一个下标是 arr.length - 1，直接用 arr.length 会越界。' },
+      { section: '数组与方法', q: '下面哪个写法表示定义一个二维 int 数组？', options: ['int arr;', 'int[] arr;', 'int[][] arr;', 'int arr[];[]'], answer: 2, explain: '二维数组常见定义写法是 int[][] arr。' },
+      { section: '数组与方法', q: '方法调用时，实参传给形参本质上属于什么？', options: ['引用传递', '地址传递', '值传递', '随机传递'], answer: 2, explain: 'Java 统一是值传递。' },
+      { section: '数组与方法', q: '如果方法没有返回值，返回类型应该写什么？', options: ['null', 'int', 'void', 'Object'], answer: 2, explain: '不返回值的方法，返回类型写 void。' },
+      { section: '数组与方法', q: '方法的形参列表里，参数之间通常用什么分隔？', options: ['.', ';', ',', ':'], answer: 2, explain: '多个参数之间用逗号分隔。' },
+      { section: '数组与方法', q: '可变参数在一个方法参数列表里通常应该放在？', options: ['最前面', '中间', '最后', '任意位置'], answer: 2, explain: '可变参数一般放在最后。' },
+      { section: '数组与方法', q: '下面哪个最可能导致栈溢出？', options: ['数组长度太大', '无限递归', 'for 循环次数多', '定义很多局部变量'], answer: 1, explain: '递归没有结束条件时，很容易栈溢出。' },
+      { section: '数组与方法', q: '数组属于哪种数据类型？', options: ['基本类型', '引用类型', '枚举类型', '注解类型'], answer: 1, explain: '数组本质上是对象，属于引用类型。' },
+      { section: '数组与方法', q: '如果一个方法被声明成 static，调用它最常见的方式是？', options: ['对象名.方法名()', '类名.方法名()', '只能在 main 里调', '必须先 new 两次'], answer: 1, explain: 'static 方法属于类，常见调用方式是 类名.方法名()。' },
+
+      { section: '面向对象基础', q: '对象中的成员变量真正存放在哪一块内存区域通常更接近？', options: ['对象对应的堆内存', '方法栈帧里', '源码文件里', '常量池里'], answer: 0, explain: '对象创建后，成员变量跟着对象一起存在堆内存中。' },
+      { section: '面向对象基础', q: '局部变量一般随着什么结束而销毁？', options: ['类加载结束', '对象销毁', '方法调用结束', '程序编译结束'], answer: 2, explain: '局部变量一般随着方法执行结束而失效。' },
+      { section: '面向对象基础', q: '成员变量如果不主动赋值，引用类型默认值一般是？', options: ['0', 'false', 'null', '空字符串'], answer: 2, explain: '引用类型成员变量默认值通常是 null。' },
+      { section: '面向对象基础', q: '一个类里可以有多少个普通成员方法？', options: ['只能一个', '最多十个', '可以有多个', '必须和成员变量数量相同'], answer: 2, explain: '一个类里当然可以定义多个方法。' },
+      { section: '面向对象基础', q: '如果构造方法里形参名和成员变量名重名，通常用什么区分成员变量？', options: ['super', 'this', 'class', 'new'], answer: 1, explain: 'this.name 这种写法就是为了区分成员变量和同名形参。' },
+      { section: '面向对象基础', q: '子类默认继承父类中的什么构造方法？', options: ['所有构造方法', '只有 private 构造', '不会继承构造方法', '只继承有参构造'], answer: 2, explain: '构造方法不能被继承，只能通过 super 去调用。' },
+      { section: '面向对象基础', q: 'super() 如果不手写，通常会在子类构造方法中怎样？', options: ['编译器默认补上无参 super()', '默认补 this()', '默认不调用任何构造', '运行时随机选父类构造'], answer: 0, explain: '如果父类有无参构造，编译器通常会默认补一个 super()。' },
+      { section: '面向对象基础', q: 'this(...) 和 super(...) 在同一个构造方法中通常？', options: ['可以同时写两次', '可以同时作为第一句', '不能同时作为第一句出现', '必须同时存在'], answer: 2, explain: 'this(...) 和 super(...) 都要求写在构造方法第一句，所以不能同时并列出现。' },
+      { section: '面向对象基础', q: '创建对象时，如果类中定义了有参构造但没定义无参构造，直接 new 类名() 会怎样？', options: ['自动补无参构造', '编译报错', '运行时报错', '返回 null'], answer: 1, explain: '自己写了构造方法后，编译器就不会再自动补无参构造了。' },
+      { section: '面向对象基础', q: '继承的关键字是？', options: ['implements', 'extends', 'inherit', 'super'], answer: 1, explain: '类继承类用 extends。' },
+
+      { section: '面向对象进阶', q: '同一个类中，static 成员变量通常更适合描述什么信息？', options: ['每个对象都不同的数据', '所有对象共享的数据', '局部临时变量', '只能存字符串的数据'], answer: 1, explain: 'static 变量属于类，通常存放共享信息。' },
+      { section: '面向对象进阶', q: '静态代码块的一个常见作用是？', options: ['给局部变量赋值', '做类加载时的初始化', '替代所有构造方法', '创建匿名内部类'], answer: 1, explain: '静态代码块一般在类加载时执行一次，适合做初始化。' },
+      { section: '面向对象进阶', q: '子类重写父类方法时，访问权限通常应该？', options: ['更小', '更大或相同', '必须 private', '必须默认权限'], answer: 1, explain: '重写时访问权限不能缩小。' },
+      { section: '面向对象进阶', q: 'private 方法为什么不能被重写？', options: ['因为它不会被继承到子类可见范围', '因为返回值不同', '因为必须是 static', '因为只能在接口里写'], answer: 0, explain: 'private 方法对子类不可见，也就谈不上重写。' },
+      { section: '面向对象进阶', q: 'final 修饰类时，表示这个类？', options: ['必须被继承', '不能被继承', '不能创建对象', '必须有抽象方法'], answer: 1, explain: 'final 类不能再有子类。' },
+      { section: '面向对象进阶', q: 'final 修饰变量时，通常表示这个变量？', options: ['不能再重新赋值', '必须是 public', '必须是 static', '内容一定不可变'], answer: 0, explain: 'final 变量一旦赋值后，不能再重新指向或修改这个变量本身。' },
+      { section: '面向对象进阶', q: '包的主要作用之一是？', options: ['提高 CPU 速度', '组织和管理类，避免重名', '让类自动继承', '替代权限修饰符'], answer: 1, explain: '包常用来分类管理类，也能减少类名冲突。' },
+      { section: '面向对象进阶', q: '导包通常使用哪个关键字？', options: ['package', 'include', 'using', 'import'], answer: 3, explain: '导入其他包下的类一般用 import。' },
+      { section: '面向对象进阶', q: '下面哪项更符合封装带来的好处？', options: ['外部可以随便改内部状态', '隐藏实现细节，控制访问入口', '类可以不写方法', '对象不需要创建'], answer: 1, explain: '封装的价值就在于隐藏细节、暴露受控接口。' },
+      { section: '面向对象进阶', q: '饿汉式单例的一个特点是？', options: ['对象在类加载时就创建', '对象在第一次用到时才创建', '一定线程不安全', '不能有静态方法'], answer: 0, explain: '饿汉式一般在类加载阶段就把单例对象创建好了。' },
+
+      { section: '抽象类接口多态异常', q: '一个类可以继承几个普通类？', options: ['0 或 1 个', '2 个', '任意多个', '必须 3 个'], answer: 0, explain: 'Java 类是单继承，一个类最多继承一个父类。' },
+      { section: '抽象类接口多态异常', q: '一个类可以实现几个接口？', options: ['只能 1 个', '最多 2 个', '可以实现多个', '必须先继承接口'], answer: 2, explain: 'Java 支持类实现多个接口。' },
+      { section: '抽象类接口多态异常', q: '多态中，编译看左边、运行看右边，这句话主要说的是？', options: ['成员变量和局部变量', '成员方法调用的绑定特性', '构造方法数量', '包的导入规则'], answer: 1, explain: '多态下编译器按引用类型检查，运行时按实际对象类型调用重写方法。' },
+      { section: '抽象类接口多态异常', q: '异常体系中，Error 和 Exception 的关系更接近哪种描述？', options: ['都属于 Throwable 的子类', 'Error 继承 Exception', 'Exception 继承 RuntimeException', '两者毫无关系'], answer: 0, explain: 'Error 和 Exception 都是 Throwable 的子类。' },
+      { section: '抽象类接口多态异常', q: 'RuntimeException 属于哪一类异常？', options: ['编译时必须处理的检查型异常', '运行时异常', '语法异常', 'IO 异常'], answer: 1, explain: 'RuntimeException 及其子类属于运行时异常。' },
+      { section: '抽象类接口多态异常', q: 'try-catch 的主要作用是？', options: ['主动制造异常', '捕获并处理可能发生的异常', '关闭 JVM', '替代 if 语句'], answer: 1, explain: 'try-catch 用于捕获异常并进行处理。' },
+      { section: '抽象类接口多态异常', q: 'throws 写在方法声明后面，通常表示？', options: ['方法内部已经处理完异常', '方法可能抛出这些异常，交给调用者处理', '方法一定不会报错', '方法必须是 private'], answer: 1, explain: 'throws 是向上声明异常，让调用者决定怎么处理。' },
+      { section: '抽象类接口多态异常', q: '自定义异常类通常更常见的做法是继承哪个类？', options: ['Thread', 'Exception 或 RuntimeException', 'String', 'Class'], answer: 1, explain: '自定义异常一般继承 Exception 或 RuntimeException。' },
+      { section: '抽象类接口多态异常', q: '接口和抽象类相比，哪一项更符合接口的特点？', options: ['更适合描述能做什么', '更适合保存大量实例状态', '必须有构造方法', '不能被实现'], answer: 0, explain: '接口更偏向描述行为规范。' },
+      { section: '抽象类接口多态异常', q: '父类引用指向子类对象后，如果想调用子类特有方法，通常需要？', options: ['自动就能调用', '向下转型', '重写 equals', '导入包'], answer: 1, explain: '父类引用默认只能看到父类声明的成员，要调子类特有方法通常要向下转型。' },
+
+      { section: 'Object 包装类 String', q: '如果一个类重写了 equals，通常也建议一起重写哪个方法？', options: ['wait', 'notify', 'hashCode', 'finalize'], answer: 2, explain: 'equals 和 hashCode 通常要保持一致性。' },
+      { section: 'Object 包装类 String', q: 'String s = \"abc\"; s.concat(\"d\"); 之后如果不接收返回值，s 通常还是？', options: ['abcd', 'abc', 'null', '报错'], answer: 1, explain: 'String 不可变，concat 会返回新字符串，不接收的话原值不变。' },
+      { section: 'Object 包装类 String', q: '字符串比较内容是否相等，通常更合适用？', options: ['==', 'equals()', 'compareTo() > 0', 'hashCode()'], answer: 1, explain: '比较字符串内容一般用 equals()。' },
+      { section: 'Object 包装类 String', q: 'StringBuilder 和 StringBuffer 的一个常见区别是？', options: ['前者通常线程不安全但更快', '前者只能存数字', '后者不可变', '两者完全不能追加'], answer: 0, explain: 'StringBuilder 一般线程不安全但效率高，StringBuffer 线程更安全一些。' },
+      { section: 'Object 包装类 String', q: 'Math.random() 返回值的范围通常是？', options: ['[0,1)', '(0,1]', '[1,2)', '[0,10)'], answer: 0, explain: 'Math.random() 通常返回大于等于 0 且小于 1 的 double。' },
+      { section: 'Object 包装类 String', q: 'Date 类通常用于表示什么？', options: ['线程对象', '日期时间点', '文件路径', '集合类型'], answer: 1, explain: 'Date 常用来表示一个时间点。' },
+      { section: 'Object 包装类 String', q: 'String 的 length() 返回的是什么？', options: ['字节数', '字符个数', '地址值', '对象个数'], answer: 1, explain: 'length() 返回字符串长度。' },
+      { section: 'Object 包装类 String', q: '字符串转字符数组常用哪个方法？', options: ['toCharArray()', 'toArrayList()', 'charAtAll()', 'charsToString()'], answer: 0, explain: '字符串转成字符数组常用 toCharArray()。' },
+      { section: 'Object 包装类 String', q: 'charAt(0) 的作用通常是？', options: ['获取第一个字符', '删除第一个字符', '返回字符数组', '获取最后一个字符'], answer: 0, explain: 'charAt(0) 就是取下标 0 位置的字符。' },
+      { section: 'Object 包装类 String', q: '拆分字符串常用哪个方法？', options: ['join()', 'split()', 'cut()', 'substringAll()'], answer: 1, explain: '按规则拆分字符串，一般用 split()。' },
+
+      { section: '集合与常用类', q: 'ArrayList 底层结构更接近什么？', options: ['数组', '链表', '二叉树', '队列'], answer: 0, explain: 'ArrayList 底层更接近动态数组。' },
+      { section: '集合与常用类', q: 'LinkedList 更适合哪种场景？', options: ['频繁随机访问', '频繁头尾插入删除', '只能排序', '只能存整数'], answer: 1, explain: 'LinkedList 在头尾插入删除上更有优势。' },
+      { section: '集合与常用类', q: 'Map 遍历时，想同时拿到 key 和 value，常见方式是？', options: ['只遍历 values', '遍历 entrySet()', '只遍历 keySet 但永远不取值', '直接打印 Map.class'], answer: 1, explain: '遍历 entrySet() 可以同时拿到键和值。' },
+      { section: '集合与常用类', q: 'HashSet 去重通常依赖对象的哪两个方法配合？', options: ['wait 和 notify', 'equals 和 hashCode', 'toString 和 clone', 'get 和 set'], answer: 1, explain: 'HashSet 判重一般依赖 hashCode 和 equals。' },
+      { section: '集合与常用类', q: 'Collections.sort(list) 主要用于？', options: ['复制集合', '排序 List', '删除重复元素', '清空 Map'], answer: 1, explain: 'Collections.sort 常用于对 List 排序。' },
+      { section: '集合与常用类', q: '增强 for 循环更适合哪类场景？', options: ['需要频繁按下标改值', '只需要顺序遍历元素', '必须删除元素', '必须知道容量变化'], answer: 1, explain: '增强 for 更适合纯遍历。' },
+      { section: '集合与常用类', q: 'File.length() 通常用于获取什么？', options: ['文件路径长度', '文件字节大小', '文件夹个数', '文件名字符数'], answer: 1, explain: 'File.length() 一般返回文件大小，单位是字节。' },
+      { section: '集合与常用类', q: '创建单级目录常用哪个方法？', options: ['mkdir()', 'mkdirs()', 'createDir()', 'newFolder()'], answer: 0, explain: 'mkdir() 常用于创建单级目录。' },
+      { section: '集合与常用类', q: '创建多级目录更常用哪个方法？', options: ['mkdirs()', 'mkdir()', 'createDirs()', 'openDir()'], answer: 0, explain: 'mkdirs() 可以按需创建多级目录。' },
+      { section: '集合与常用类', q: '如果只想读取文本文件中的字符内容，更常见优先考虑哪类流？', options: ['字符输入流', '字节输出流', '对象输出流', '随机流'], answer: 0, explain: '纯文本读取通常优先考虑字符输入流。' },
+
+      { section: 'IO 内部类 Lambda', q: 'OutputStreamWriter 的主要作用是？', options: ['把字符按指定编码写成字节', '把对象转成集合', '把数组转成 Map', '只能读不能写'], answer: 0, explain: 'OutputStreamWriter 是字符到字节的桥梁。' },
+      { section: 'IO 内部类 Lambda', q: 'InputStreamReader 的主要作用是？', options: ['把字节按指定编码读成字符', '把字符压缩成字节', '只能写字符串', '只能操作图片'], answer: 0, explain: 'InputStreamReader 是字节到字符的桥梁。' },
+      { section: 'IO 内部类 Lambda', q: 'BufferedReader 读取一整行文本常用哪个方法？', options: ['nextLine()', 'readLine()', 'readAll()', 'getLine()'], answer: 1, explain: 'BufferedReader 常用 readLine() 按行读取。' },
+      { section: 'IO 内部类 Lambda', q: '对象反序列化常用哪个流？', options: ['ObjectInputStream', 'FileWriter', 'BufferedWriter', 'PrintStream'], answer: 0, explain: '对象读回来通常用 ObjectInputStream。' },
+      { section: 'IO 内部类 Lambda', q: '局部内部类定义在什么位置？', options: ['类外部', '方法内部或代码块内部', '包声明上面', '只能在接口中'], answer: 1, explain: '局部内部类一般写在方法里或代码块里。' },
+      { section: 'IO 内部类 Lambda', q: '函数式接口指的通常是？', options: ['没有任何方法的接口', '只有一个抽象方法的接口', '所有方法都是 static 的接口', '只能给 Lambda 读不能写的接口'], answer: 1, explain: '函数式接口核心就是只有一个抽象方法。' },
+      { section: 'IO 内部类 Lambda', q: 'Lambda 省略参数类型的前提通常是？', options: ['编译器能根据上下文推断类型', '参数必须是 String', '只能在 main 中', '必须先写匿名类再删掉'], answer: 0, explain: '很多时候 Lambda 参数类型可以类型推断。' },
+      { section: 'IO 内部类 Lambda', q: '枚举的本质更接近什么？', options: ['特殊的类', '特殊的接口', '特殊的数组', '特殊的包'], answer: 0, explain: 'Java 里的枚举本质上也是一种特殊的类。' },
+      { section: 'IO 内部类 Lambda', q: 'assert 要生效，运行程序时通常需要加什么参数？', options: ['-version', '-ea', '-jar', '-cp'], answer: 1, explain: 'assert 常用 -ea 开启。' },
+      { section: 'IO 内部类 Lambda', q: '可变参数在方法内部本质上会被当成什么来用？', options: ['集合', 'Map', '数组', '对象流'], answer: 2, explain: '可变参数本质就是数组。' },
+
+      { section: '反射', q: '获取类对象的第三种常见方式是？', options: ['Class.forName(全类名)', 'new Class()', 'Class.create()', 'Object.forName()'], answer: 0, explain: '拿 Class 对象常见三种方式里就包括 Class.forName(全类名)。' },
+      { section: '反射', q: 'getFields() 获取的字段范围通常是？', options: ['当前类全部字段', '所有 private 字段', '所有 public 字段', '只有 static 字段'], answer: 2, explain: 'getFields() 主要获取 public 字段。' },
+      { section: '反射', q: 'getDeclaredFields() 获取的字段范围通常是？', options: ['当前类声明的所有字段', '父类全部字段', '只有 public 字段', '只有 final 字段'], answer: 0, explain: 'getDeclaredFields() 看的是当前类自己声明的所有字段。' },
+      { section: '反射', q: '如果想拿到指定名字的 private 字段，更常见的方法是？', options: ['getField(\"name\")', 'getDeclaredField(\"name\")', 'findField(\"name\")', 'fieldOf(\"name\")'], answer: 1, explain: '拿指定字段且允许 private，通常用 getDeclaredField。' },
+      { section: '反射', q: 'Field.set(obj, value) 的作用是？', options: ['获取字段类型', '给对象的字段赋值', '删除字段', '创建新类'], answer: 1, explain: 'Field.set 常用于通过反射给成员变量赋值。' },
+      { section: '反射', q: 'Field.get(obj) 的作用是？', options: ['获取某对象该字段的值', '获取字段个数', '获取方法返回值', '给字段改名'], answer: 0, explain: 'Field.get 可以从对象上读出字段值。' },
+      { section: '反射', q: 'getMethods() 获取的方法范围通常是？', options: ['当前类所有方法，不含父类', '所有 public 方法，包含父类的', '只有 private 方法', '只有无参方法'], answer: 1, explain: 'getMethods() 会拿到 public 方法，也包括继承来的。' },
+      { section: '反射', q: 'getDeclaredMethods() 获取的方法范围通常是？', options: ['当前类声明的所有方法', '所有父类 public 方法', '只有 static 方法', '只有带参方法'], answer: 0, explain: 'getDeclaredMethods() 看的是当前类自己声明的方法。' },
+      { section: '反射', q: '如果反射调用的是无参方法，invoke 常见写法更接近？', options: ['invoke()', 'invoke(obj)', 'invoke(null, obj)', 'invoke(obj, null, null)'], answer: 1, explain: '调用实例无参方法时，常见写法是 method.invoke(对象)。' },
+      { section: '反射', q: '通过反射调用有返回值的方法后，返回结果通常来自 invoke 的什么？', options: ['返回值就是 invoke 的返回结果', '一定直接打印在控制台', '会自动存到字段里', '只能通过异常拿到'], answer: 0, explain: 'invoke 本身会返回方法执行结果，需要时再强转成目标类型。' }
+    ];
+
+    const letters = ['A', 'B', 'C', 'D'];
+    const quizEl = document.getElementById('quiz');
+    const answeredCountEl = document.getElementById('answeredCount');
+    const correctCountEl = document.getElementById('correctCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const toggleAnswerBtn = document.getElementById('toggleAnswerBtn');
+    let showAllAnswers = false;
+
+    totalCountEl.textContent = `总题数：${questions.length}`;
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderQuiz() {
+      let html = '';
+      let currentSection = '';
+
+      questions.forEach((item, index) => {
+        if (item.section !== currentSection) {
+          currentSection = item.section;
+          html += `
+            <section class="section-card">
+              <h2>${escapeHtml(currentSection)}</h2>
+              <p>${getSectionDesc(currentSection)}</p>
+            </section>
+          `;
+        }
+
+        const optionsHtml = item.options.map((option, optIndex) => `
+          <label class="option">
+            <input type="radio" name="q${index}" value="${optIndex}">
+            <span class="option-letter">${letters[optIndex]}.</span>
+            <span>${escapeHtml(option)}</span>
+          </label>
+        `).join('');
+
+        html += `
+          <section class="question-card" id="card-${index}">
+            <div class="question-head">
+              <span class="q-no">第 ${index + 1} 题</span>
+              <span class="q-section">${escapeHtml(item.section)}</span>
+            </div>
+            <p class="question-title">${escapeHtml(item.q)}</p>
+            <div class="options">${optionsHtml}</div>
+            <div class="question-actions">
+              <button class="primary" type="button" onclick="gradeOne(${index})">提交本题</button>
+              <button class="secondary" type="button" onclick="toggleOneAnswer(${index})">查看解析</button>
+            </div>
+            <div class="result" id="result-${index}"></div>
+            <div class="answer-panel" id="answer-${index}">
+              <div><strong>正确答案：</strong>${letters[item.answer]}．${escapeHtml(item.options[item.answer])}</div>
+              <div><strong>解析：</strong>${escapeHtml(item.explain)}</div>
+            </div>
+          </section>
+        `;
+      });
+
+      quizEl.innerHTML = html;
+      syncStats();
+      syncAnswerPanels();
+    }
+
+    function getSectionDesc(section) {
+      const descMap = {
+        'Java基础': 'JDK、JRE、主方法、注释、标识符、数据类型这些最基础的点。',
+        '流程控制': '运算符、if、switch、循环、break、continue、Scanner、Random。',
+        '数组与方法': '数组定义、遍历、默认值、冒泡排序、方法参数、重载、递归。',
+        '面向对象基础': '类、对象、this、匿名对象、成员变量、构造方法、super。',
+        '面向对象进阶': '封装、访问修饰符、static、单例、重写、final。',
+        '抽象类接口多态异常': '抽象类、接口、多态、向下转型、instanceof、异常。',
+        'Object 包装类 String': 'Object、equals、toString、Integer、自动装箱、String、Calendar。',
+        '集合与常用类': 'Collection、List、Set、Map、泛型、Arrays、File、字节流、字符流。',
+        'IO 内部类 Lambda': '缓冲流、序列化、内部类、Lambda、工厂模式、枚举、断言。',
+        '反射': 'Class、Constructor、Field、Method 这些反射核心点。'
+      };
+      return descMap[section] || '';
+    }
+
+    function getSelectedValue(index) {
+      const checked = document.querySelector(`input[name="q${index}"]:checked`);
+      return checked ? Number(checked.value) : null;
+    }
+
+    function renderResult(index, selected, fromBatch = false) {
+      const item = questions[index];
+      const resultEl = document.getElementById(`result-${index}`);
+      const answerEl = document.getElementById(`answer-${index}`);
+
+      resultEl.className = 'result show';
+
+      if (selected === null) {
+        resultEl.classList.add('warn');
+        resultEl.innerHTML = `
+          <div class="result-line">本题还没作答。</div>
+          <div class="result-line">正确答案：${letters[item.answer]}．${escapeHtml(item.options[item.answer])}</div>
+        `;
+      } else if (selected === item.answer) {
+        resultEl.classList.add('ok');
+        resultEl.innerHTML = `
+          <div class="result-line">回答正确</div>
+          <div class="result-line">我的答案：${letters[selected]}．${escapeHtml(item.options[selected])}</div>
+        `;
+      } else {
+        resultEl.classList.add('bad');
+        resultEl.innerHTML = `
+          <div class="result-line">回答错误</div>
+          <div class="result-line">我的答案：${letters[selected]}．${escapeHtml(item.options[selected])}</div>
+          <div class="result-line">正确答案：${letters[item.answer]}．${escapeHtml(item.options[item.answer])}</div>
+        `;
+      }
+
+      if (showAllAnswers || !fromBatch) {
+        answerEl.classList.add('show');
+      }
+    }
+
+    function syncStats() {
+      let answered = 0;
+      let correct = 0;
+
+      questions.forEach((item, index) => {
+        const selected = getSelectedValue(index);
+        if (selected !== null) {
+          answered += 1;
+          if (selected === item.answer) {
+            correct += 1;
+          }
+        }
+      });
+
+      answeredCountEl.textContent = `已作答：${answered}`;
+      correctCountEl.textContent = `答对：${correct}`;
+    }
+
+    function syncAnswerPanels() {
+      questions.forEach((_, index) => {
+        const answerEl = document.getElementById(`answer-${index}`);
+        if (!answerEl) return;
+        if (showAllAnswers) {
+          answerEl.classList.add('show');
+        } else if (!document.getElementById(`result-${index}`).classList.contains('show')) {
+          answerEl.classList.remove('show');
+        }
+      });
+    }
+
+    function gradeOne(index) {
+      const selected = getSelectedValue(index);
+      renderResult(index, selected, false);
+      syncStats();
+    }
+
+    function gradeAll() {
+      questions.forEach((_, index) => {
+        const selected = getSelectedValue(index);
+        renderResult(index, selected, true);
+      });
+      syncStats();
+    }
+
+    function toggleOneAnswer(index) {
+      const answerEl = document.getElementById(`answer-${index}`);
+      answerEl.classList.toggle('show');
+    }
+
+    function toggleAllAnswers() {
+      showAllAnswers = !showAllAnswers;
+      toggleAnswerBtn.textContent = showAllAnswers ? '收起全部解析' : '展开全部解析';
+      questions.forEach((_, index) => {
+        const answerEl = document.getElementById(`answer-${index}`);
+        if (showAllAnswers) {
+          answerEl.classList.add('show');
+        } else {
+          answerEl.classList.remove('show');
+        }
+      });
+    }
+
+    function resetQuiz() {
+      questions.forEach((_, index) => {
+        const checked = document.querySelector(`input[name="q${index}"]:checked`);
+        if (checked) {
+          checked.checked = false;
+        }
+        const resultEl = document.getElementById(`result-${index}`);
+        const answerEl = document.getElementById(`answer-${index}`);
+        resultEl.className = 'result';
+        resultEl.innerHTML = '';
+        answerEl.classList.remove('show');
+      });
+      showAllAnswers = false;
+      toggleAnswerBtn.textContent = '展开全部解析';
+      syncStats();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('submitAllBtn').addEventListener('click', gradeAll);
+    document.getElementById('toggleAnswerBtn').addEventListener('click', toggleAllAnswers);
+    document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+
+    renderQuiz();
+    window.gradeOne = gradeOne;
+    window.toggleOneAnswer = toggleOneAnswer;
+  </script>
+</body>
+</html>
